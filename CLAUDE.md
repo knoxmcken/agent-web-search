@@ -4,10 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-**Run the agent:**
+**Run the LangChain agent:**
 ```bash
 python agent.py <search query>
 # e.g. python agent.py latest python version
+```
+
+**Run the OpenAI Agents SDK agent:**
+```bash
+python openai_agent.py <search query>
+# e.g. python openai_agent.py latest python version
 ```
 
 **Run all tests:**
@@ -26,9 +32,10 @@ Requires a `.env` file (git-ignored) with:
 ```
 OPENAI_API_KEY=...
 SERPER_API_KEY=...
+TAVILY_API_KEY=...
 ```
 
-`agent.py` calls `load_dotenv()` at startup — no manual export needed.
+`agent.py` and `openai_agent.py` both call `load_dotenv()` at startup — no manual export needed. `SERPER_API_KEY` is used by `agent.py`; `TAVILY_API_KEY` is used by `openai_agent.py`.
 
 ## Architecture
 
@@ -44,6 +51,8 @@ SERPER_API_KEY=...
 The agent iterates Think → Search → Observe until it has enough information, using only search results (not pre-trained knowledge) to answer.
 
 **Note:** `agent.py` imports from `langchain_classic.agents`, but `requirements.txt` lists `langchain` (not `langchain-classic`). If `initialize_agent` is missing after install, add `langchain-classic` to `requirements.txt`.
+
+`openai_agent.py` is a second single-file agent using the OpenAI Agents SDK and Tavily for web search. It reads the query from CLI args, defines a `web_search` tool with `@function_tool`, and streams output token-by-token via `Runner.run_streamed()` + `result.stream_events()`. PyPI install name: `openai-agents`; import name: `agents` (i.e. `from agents import Agent, Runner`). The reference code uses `from openai_agents import ...` which is incorrect for the official package.
 
 ## Testing Approach
 
