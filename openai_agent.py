@@ -25,7 +25,8 @@ def web_search(query: str) -> str:
         response = tavily_client.search(query=query, max_results=3, topic="general")
         results = []
         for item in response.get("results", []):
-            results.append(f"Source: {item['url']}\nContent: {item['content']}\n")
+            content = item["content"][:400]
+            results.append(f"Source: {item['url']}\nContent: {content}\n")
         return "\n---\n".join(results) if results else "No relevant results found."
     except Exception as e:
         return f"Error executing search: {str(e)}"
@@ -46,7 +47,7 @@ search_agent = Agent(
 
 async def main():
     print("\n[Thinking and Searching...]\n")
-    result = Runner.run_streamed(search_agent, input=query)
+    result = Runner.run_streamed(search_agent, input=query, max_turns=5)
     async for event in result.stream_events():
         if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
             print(event.data.delta, end="", flush=True)

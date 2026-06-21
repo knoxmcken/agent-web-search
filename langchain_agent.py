@@ -19,7 +19,7 @@ if len(sys.argv) < 2:
 
 query = " ".join(sys.argv[1:])
 
-search = GoogleSerperAPIWrapper()
+search = GoogleSerperAPIWrapper(k=3)
 tools = [
     Tool(
         name="Search",
@@ -29,7 +29,7 @@ tools = [
 ]
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=False)
+agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=False, max_iterations=5)
 
 today = date.today().strftime("%B %d, %Y")
 result = agent.invoke({"input": f"Today is {today}. {query} Use only the search results you find. Answer concisely in 2-3 sentences."})

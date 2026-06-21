@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 import requests
 from datetime import date
 from dotenv import load_dotenv
@@ -35,23 +34,39 @@ def serper_search(q):
     response = requests.post(
         "https://google.serper.dev/search",
         headers={"X-API-KEY": os.environ["SERPER_API_KEY"], "Content-Type": "application/json"},
-        json={"q": q},
+        json={"q": q, "num": 5},
     )
-    return json.dumps(response.json())
+    data = response.json()
+    lines = []
+    if data.get("answerBox"):
+        ab = data["answerBox"]
+        answer = ab.get("answer") or ab.get("snippet") or ""
+        if answer:
+            lines.append(f"Answer box: {answer}")
+    for r in data.get("organic", [])[:5]:
+        title = r.get("title", "")
+        link = r.get("link", "")
+        snippet = r.get("snippet", "")
+        lines.append(f"- {title} ({link}): {snippet}")
+    return "\n".join(lines) if lines else "No results found."
 
 
 today = date.today().strftime("%B %d, %Y")
-messages = [
-    {
-        "role": "user",
-        "content": f"Today is {today}. {query} Use only the search results you find. Answer concisely in 2-3 sentences.",
-    }
-]
+system_prompt = (
+    f"Today is {today}. Use only the web search results to answer. "
+    "Answer concisely in 2-3 sentences."
+)
+messages = [{"role": "user", "content": query}]
 
-while True:
+MAX_ITERATIONS = 5
+iterations = 0
+
+while iterations < MAX_ITERATIONS:
+    iterations += 1
     response = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=1024,
+        system=system_prompt,
         tools=tools,
         messages=messages,
     )
@@ -72,3 +87,5 @@ while True:
                     "content": result,
                 })
         messages.append({"role": "user", "content": tool_results})
+else:
+    print("Could not complete the search within the iteration limit.")
