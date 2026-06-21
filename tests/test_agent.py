@@ -6,7 +6,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-AGENT_PATH = str(Path(__file__).parent.parent / "agent.py")
+AGENT_PATH = str(Path(__file__).parent.parent / "langchain_agent.py")
 
 
 # --- CLI guard tests (no API calls needed) ---

@@ -6,3 +6,5 @@ google-search-results
 pytest
 openai-agents
 tavily-python
+anthropic
+requests
